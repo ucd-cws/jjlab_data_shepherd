@@ -17,10 +17,9 @@ mdb.get(mdblink, tables=TRUE)
 # get single table
 coll_info <- mdb.get(mdblink, tables="collection_info", stringsAsFactors=F) 
 
-# drop the "attributes" component:
-#coll_info <- sjlabelled::remove_all_labels(coll_info)
+# drop the "attributes" component that gets added to the dataframe (annoying but won't cause trouble)
 
-# function to remove the attrs:
+# Here's a function to remove the attrs:
 clear.labels <- function(x) {
   if(is.list(x)) {
     for(i in 1 : length(x)) class(x[[i]]) <- setdiff(class(x[[i]]), 'labelled') 
@@ -33,8 +32,8 @@ clear.labels <- function(x) {
   return(x)
 }
 
+# now run the function
 coll_info<- clear.labels(coll_info)
-
 
 # Make the Datetime R Friendly --------------------------------------------
 
@@ -51,6 +50,7 @@ coll_info <- coll_info %>% tidyr::separate(collect.time, into=c("date_old", "col
 # make a final datetime col
 coll_info$collect.datetime <- ymd_hms(paste0(coll_info$collect.date, " ", coll_info$colltime24))
 
+# check and see!
 summary(coll_info)
 
 # Make a Map of Samples ---------------------------------------------------
