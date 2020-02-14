@@ -8,8 +8,7 @@ library(fs)
 # set path to .mdb
 #mdblink <- as_fs_path("~/Downloads/JJLAB_DB_v1.1_backend_mdb.mdb") # local version
 
-mdblink <- as_fs_path("/Volumes/projects3/jj_lab/database/JJLAB_DB_v1.1backend_mdb.mdb") # through VPN
-
+mdblink <- as_fs_path("/Volumes/projects3/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb") # through VPN
 
 # see table names:
 mdb.get(mdblink, tables=TRUE)
