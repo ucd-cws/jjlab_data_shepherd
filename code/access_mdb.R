@@ -8,7 +8,10 @@ library(fs)
 # set path to .mdb
 #mdblink <- as_fs_path("~/Downloads/JJLAB_DB_v1.1_backend_mdb.mdb") # local version
 
-mdblink <- as_fs_path("/Volumes/projects3/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb") # through VPN
+# on macosx: 
+# "/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb" or "/Volumes/projects3/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb"
+
+mdblink <- as_fs_path("/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb") # through VPN
 
 # see table names:
 mdb.get(mdblink, tables=TRUE)
@@ -42,25 +45,45 @@ library(lubridate)
 coll_info$collect.date <- as.Date(mdy_hms(coll_info$collect.date))
 summary(coll_info$collect.date)
 
-# get rid of standard date in the collect.time 
+# get rid of standard date in the collect.time (this should only HH:MM)
 coll_info <- coll_info %>% tidyr::separate(collect.time, into=c("date_old", "colltime24"), " ") %>% 
   select(-date_old) # then drop the weird standard date
 
 # make a final datetime col
 coll_info$collect.datetime <- ymd_hms(paste0(coll_info$collect.date, " ", coll_info$colltime24))
 
+# reorder cols:
+coll_info <- coll_info %>% select(lab.row.no:collect.date, collect.datetime, colltime24, water.year.cap, 
+                                  run:collect.qaqc)
+
 # check and see!
 summary(coll_info)
 
-# Make a Map of Samples ---------------------------------------------------
 
+# Get Sites ---------------------------------------------------------------
+
+# read in sites table
 sites <- mdb.get(mdblink, tables="sites", stringsAsFactors=F) 
 sites<- clear.labels(sites)
 
 # look at the tally of different data types
-sites %>% group_by(site.type) %>% tally()
+sites %>% group_by(site.type) %>% tally() # so need to update these to reflect difference in spelling
+
+# fix the site.type discrepancies
+sites <- sites %>% 
+  mutate(site.type = case_when(
+    grepl("stationary", ignore.case = TRUE, site.type) ~ "stationary",
+    grepl("trawl", ignore.case = TRUE, site.type) ~ "trawl",
+    grepl("unknown", ignore.case = TRUE, site.type) ~ "unknown",
+    TRUE ~ site.type
+  ))
+
+# double check and view group tallies
+sites %>% group_by(site.type) %>% tally() # yay
 sites %>% group_by(region) %>% tally()
 sites %>% group_by(project.code) %>% tally()
+
+# Make a Map of Sites by Site.Type --------------------------------------------------------
 
 library(sf)
 library(mapview)
@@ -74,4 +97,4 @@ sites_sf %>% group_by(project.code) %>% tally()
 names(sites_sf)
 
 # view
-mapview(sites_sf, zcol="site.type")
+mapview(sites_sf, zcol="site.type", layer.name="Site Type")
