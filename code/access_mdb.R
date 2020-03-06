@@ -37,7 +37,7 @@ clear.labels <- function(x) {
 # now run the function
 coll_info<- clear.labels(coll_info)
 
-# Make the Datetime R Friendly --------------------------------------------
+# * Make the Datetime R Friendly --------------------------------------------
 
 library(lubridate)
 
@@ -59,6 +59,15 @@ coll_info <- coll_info %>% select(lab.row.no:collect.date, collect.datetime, col
 # check and see!
 summary(coll_info)
 
+
+# Read in Samples Table ---------------------------------------------------
+
+# get single table
+samples <- mdb.get(mdblink, tables="samples", stringsAsFactors=F) 
+
+samples <- clear.labels(samples)
+
+samples %>% group_by(lab.id) %>% distinct() %>% tally()
 
 # Get Sites ---------------------------------------------------------------
 
