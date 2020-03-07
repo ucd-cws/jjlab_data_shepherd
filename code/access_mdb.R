@@ -42,13 +42,18 @@ coll_info<- clear.labels(coll_info)
 
 library(RODBC)
 library(DBI)
+library(odbc)
 
-# CHANGE THIS PATH TO YOUR LOCAL LINK/FILE...must be FULL PATH
-db_con <- "C:/Users/rapeek/Desktop/tst/JJLAB_DB_v1.1backend_dbm.mdb"
+# this won't work if the file is in use...so best to use a local copy or backup copy
+# db_con <- "X:/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb"
+
+# CHANGE TO FULL PATH FOR FILE YOU'RE USING (LOCAL COPY OR RECENT BACKUP)
+db_con <- "X:/jj_lab/database/backups/JJLAB_DB_v1.1backend_backup_20200226_2.mdb"
 
 # check drivers here: odbcListDrivers:
 # should see Microsoft Access Driver (.mdb, .accdb) with a few different things
 
+# connect to the DB
 accdb_con <- dbConnect(drv = odbc(), .connection_string = paste0("Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=",db_con,";"))
 
 # list table names in DB:
@@ -65,8 +70,8 @@ coll_info <- DBI::dbReadTable(conn = accdb_con, name = "collection_info")
 library(lubridate)
 
 # Using lubridate::mdy_hms()
-coll_info$collect.date <- as.Date(mdy_hms(coll_info$collect.date))
-summary(coll_info$collect.date)
+coll_info$collect_date <- ymd(coll_info$collect_date)
+summary(coll_info$collect_date)
 
 # get rid of standard date in the collect.time (this should only HH:MM)
 coll_info <- coll_info %>% tidyr::separate(collect.time, into=c("date_old", "colltime24"), " ") %>% 
