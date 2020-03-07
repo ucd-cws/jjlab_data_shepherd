@@ -1,24 +1,25 @@
-# access .mdb from R
+# Read DATABASE IN Access (.mdb) from R
 
-library(Hmisc)
 library(tidyverse)
 library(fs)
 
+## IF WORKING WITH THE COPY ON THE SERVER (X drive in projects3)
+## this assumes you are connected to the server or connected to the folder on the server
 
-# set path to .mdb
-#mdblink <- as_fs_path("~/Downloads/JJLAB_DB_v1.1_backend_mdb.mdb") # local version
+# MACOSX: CONNECT TO MDB --------------------------------------------------
 
-# on macosx: 
-# "/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb" or "/Volumes/projects3/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb"
+library(Hmisc)
 
+### on MACOSX (this may change based on user)
 mdblink <- as_fs_path("/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb") # through VPN
 
-# see table names:
+# list table names in DB:
 mdb.get(mdblink, tables=TRUE)
 
 # get single table
-coll_info <- mdb.get(mdblink, tables="collection_info", stringsAsFactors=F) 
+coll_info <- mdb.get(mdblink, tables="collection_info", stringsAsFactors=F)
 
+# FIX/DROP ATTRIBUTES: IF ON MACOSX
 # drop the "attributes" component that gets added to the dataframe (annoying but won't cause trouble)
 
 # Here's a function to remove the attrs:
@@ -36,6 +37,28 @@ clear.labels <- function(x) {
 
 # now run the function
 coll_info<- clear.labels(coll_info)
+
+# WINDOWS: CONNECT TO MDB -------------------------------------------------
+
+library(RODBC)
+library(DBI)
+
+# CHANGE THIS PATH TO YOUR LOCAL LINK/FILE...must be FULL PATH
+db_con <- "C:/Users/rapeek/Desktop/tst/JJLAB_DB_v1.1backend_dbm.mdb"
+
+# check drivers here: odbcListDrivers:
+# should see Microsoft Access Driver (.mdb, .accdb) with a few different things
+
+accdb_con <- dbConnect(drv = odbc(), .connection_string = paste0("Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=",db_con,";"))
+
+# list table names in DB:
+dbListTables(accdb_con)
+
+# list tables that start with "s"
+dbListTables(accdb_con, table_name="s%")
+
+# read table in
+coll_info <- DBI::dbReadTable(conn = accdb_con, name = "collection_info")
 
 # * Make the Datetime R Friendly --------------------------------------------
 
