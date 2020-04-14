@@ -12,8 +12,14 @@ library(janitor)
 
 library(Hmisc)
 
+# check that the file/path exists:
+file_exists("/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb") # TRUE means yes, correct path and file exists
+
+# if there is a space in the path, use a "\\" to escape:
+file.exists("/Users/ryanpeek/Box\\ Sync/")
+
 ### on MACOSX (this may change based on user)
-mdblink <- as_fs_path("/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb") # through VPN
+mdblink <- "/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb" # through VPN
 
 # list table names in DB:
 mdb.get(mdblink, tables=TRUE, allow = "_")
