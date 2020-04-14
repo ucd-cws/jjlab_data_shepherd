@@ -16,7 +16,7 @@ library(Hmisc)
 file_exists("/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb") # TRUE means yes, correct path and file exists
 
 # if there is a space in the path, use a "\\" to escape:
-file.exists("/Users/ryanpeek/Box\\ Sync/")
+# "/Users/username/Box\\ Sync/database/JJLAB_DB_v1.1backend_dbm.mdb")
 
 ### on MACOSX (this may change based on user)
 mdblink <- "/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb" # through VPN
