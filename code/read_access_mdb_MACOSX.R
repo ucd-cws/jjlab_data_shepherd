@@ -25,28 +25,11 @@ mdblink <- "/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb" # through VPN
 mdb.get(mdblink, tables=TRUE, allow = "_")
 
 # get single table
-coll_info <- mdb.get(mdblink, tables="collection_info", stringsAsFactors=F)
+coll_info <- mdb.get(mdblink, tables="collection_info", stringsAsFactors=F, allow = "_")
 
-# FIX/DROP ATTRIBUTES: IF ON MACOSX
-# drop the "attributes" component that gets added to the dataframe (annoying but won't cause trouble)
+names(coll_info)
 
-# Here's a function to remove the attrs:
-clear.labels <- function(x) {
-  if(is.list(x)) {
-    for(i in 1 : length(x)) class(x[[i]]) <- setdiff(class(x[[i]]), 'labelled') 
-    for(i in 1 : length(x)) attr(x[[i]],"label") <- NULL
-  }
-  else {
-    class(x) <- setdiff(class(x), "labelled")
-    attr(x, "label") <- NULL
-  }
-  return(x)
-}
-
-# now run the function
-coll_info<- clear.labels(coll_info)
-
-# standardize all the col names:
+# standardize all the col names to lower case
 coll_info <- janitor::clean_names(coll_info)
 
 # MACOSX: CLEAN DATA --------------------------------------------------------------
@@ -73,34 +56,37 @@ summary(coll_info)
 # Read in Samples Table ---------------------------------------------------
 
 # get single table
-samples <- mdb.get(mdblink, tables="samples", stringsAsFactors=F) 
+samples <- mdb.get(mdblink, tables="samples", stringsAsFactors=F,  allow = "_") 
 
-samples <- clear.labels(samples)
+# standardize all the col names to lower case
+samples <- janitor::clean_names(samples)
 
-samples %>% group_by(lab.id) %>% distinct() %>% tally()
+samples %>% group_by(lab_id) %>% distinct() %>% tally()
 
 # Get Sites ---------------------------------------------------------------
 
 # read in sites table
-sites <- mdb.get(mdblink, tables="sites", stringsAsFactors=F) 
-sites<- clear.labels(sites)
+sites <- mdb.get(mdblink, tables="sites", stringsAsFactors=F, allow = "_") 
+
+# standardize all the col names to lower case
+sites <- janitor::clean_names(sites)
 
 # look at the tally of different data types
-sites %>% group_by(site.type) %>% tally() # so need to update these to reflect difference in spelling
+sites %>% group_by(site_type) %>% tally() # so need to update these to reflect difference in spelling
 
 # fix the site.type discrepancies
 sites <- sites %>% 
-  mutate(site.type = case_when(
-    grepl("stationary", ignore.case = TRUE, site.type) ~ "stationary",
-    grepl("trawl", ignore.case = TRUE, site.type) ~ "trawl",
-    grepl("unknown", ignore.case = TRUE, site.type) ~ "unknown",
-    TRUE ~ site.type
+  mutate(site_type = case_when(
+    grepl("stationary", ignore.case = TRUE, site_type) ~ "stationary",
+    grepl("trawl", ignore.case = TRUE, site_type) ~ "trawl",
+    grepl("unknown", ignore.case = TRUE, site_type) ~ "unknown",
+    TRUE ~ site_type
   ))
 
 # double check and view group tallies
-sites %>% group_by(site.type) %>% tally() # yay
+sites %>% group_by(site_type) %>% tally() # yay
 sites %>% group_by(region) %>% tally()
-sites %>% group_by(project.code) %>% tally()
+sites %>% group_by(project_code) %>% tally()
 
 # Make a Map of Sites by Site.Type --------------------------------------------------------
 
@@ -109,11 +95,11 @@ library(mapview)
 
 # make data into sf layer
 sites_sf <- sites %>% 
-  filter(!is.na(site.long)) %>%  # need to remove all NAs 
-  st_as_sf(coords = c("site.long","site.lat"), remove = F, crs=4326)
+  filter(!is.na(site_long)) %>%  # need to remove all NAs 
+  st_as_sf(coords = c("site_long","site_lat"), remove = F, crs=4326)
 
-sites_sf %>% group_by(project.code) %>% tally()
+sites_sf %>% group_by(project_code) %>% tally()
 names(sites_sf)
 
 # view
-mapview(sites_sf, zcol="site.type", layer.name="Site Type")
+mapview(sites_sf, zcol="site_type", layer.name="Site Type")
