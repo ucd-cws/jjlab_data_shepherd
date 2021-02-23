@@ -8,6 +8,14 @@ library(janitor)
 ## IF WORKING WITH THE COPY ON THE SERVER (X drive in projects3)
 ## this assumes you are connected to the server or connected to the folder on the server
 
+# this may require:
+# 1. Installing "brew" which is useful for installing packages on MacOSX. Open a terminal window on your computer and run: 
+# ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+# 2. Then install mdbtools
+# brew install mdbtools 
+# 3. Finally, make sure you have the most updated version of "Hmisc"
+# install.packages("Hmisc")
+
 # MACOSX: CONNECT TO MDB --------------------------------------------------
 
 library(Hmisc)
@@ -21,8 +29,12 @@ file_exists("/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb") # TRUE mean
 ### on MACOSX (this may change based on user)
 mdblink <- "/Volumes/jj_lab/database/JJLAB_DB_v1.1backend_dbm.mdb" # through VPN
 
+# test with local copy
+mdblink <- "data/JJLAB_DB_v1.1backend_dbm.mdb"
+file_exists(mdblink)
+
 # list table names in DB:
-mdb.get(mdblink, tables=TRUE, allow = "_")
+mdb.get(file = mdblink, tables=TRUE, allow = "_")
 
 # get single table
 coll_info <- mdb.get(mdblink, tables="collection_info", stringsAsFactors=F, allow = "_")
